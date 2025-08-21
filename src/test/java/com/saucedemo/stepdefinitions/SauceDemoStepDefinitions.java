@@ -3,7 +3,7 @@ package com.saucedemo.stepdefinitions;
 import com.saucedemo.pages.*;
 import io.cucumber.java.en.*;
 import io.cucumber.datatable.DataTable;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import java.util.Map;
 
 public class SauceDemoStepDefinitions {
@@ -27,8 +27,8 @@ public class SauceDemoStepDefinitions {
 
     @Then("I should see the products page")
     public void i_should_see_the_products_page() {
-        assertTrue("Products page should be displayed", productsPage.isProductsPageDisplayed());
-        assertEquals("Page title should be 'Products'", "Products", productsPage.getPageTitle());
+        assertTrue(productsPage.isProductsPageDisplayed(), "Products page should be displayed");
+        assertEquals("Products", productsPage.getPageTitle(), "Page title should be 'Products'");
     }
 
     @When("I add {string} to the cart")
@@ -43,8 +43,8 @@ public class SauceDemoStepDefinitions {
 
     @Then("I should see {int} items in the cart")
     public void i_should_see_items_in_the_cart(int expectedCount) {
-        assertEquals("Cart should contain " + expectedCount + " items",
-                expectedCount, productsPage.getCartItemCount());
+        assertEquals(expectedCount, productsPage.getCartItemCount(),
+                "Cart should contain " + expectedCount + " items");
     }
 
     @When("I go to the cart")
@@ -54,8 +54,8 @@ public class SauceDemoStepDefinitions {
 
     @Then("I should see {string} in the cart")
     public void i_should_see_product_in_the_cart(String productName) {
-        assertTrue("Product '" + productName + "' should be in the cart",
-                cartPage.isProductInCart(productName));
+        assertTrue(cartPage.isProductInCart(productName),
+                "Product '" + productName + "' should be in the cart");
     }
 
     @When("I proceed to checkout")
@@ -70,8 +70,8 @@ public class SauceDemoStepDefinitions {
         String lastName = data.get("lastName");
         String postalCode = data.get("postalCode");
 
-        assertTrue("Checkout information page should be displayed",
-                checkoutInformationPage.isCheckoutInformationPageDisplayed());
+        assertTrue(checkoutInformationPage.isCheckoutInformationPageDisplayed(),
+                "Checkout information page should be displayed");
         checkoutInformationPage.fillCheckoutInformation(firstName, lastName, postalCode);
     }
 
@@ -82,10 +82,10 @@ public class SauceDemoStepDefinitions {
 
     @Then("I should see the order summary")
     public void i_should_see_the_order_summary() {
-        assertTrue("Checkout overview page should be displayed",
-                checkoutOverviewPage.isCheckoutOverviewPageDisplayed());
-        assertEquals("Page title should be 'Checkout: Overview'",
-                "Checkout: Overview", checkoutOverviewPage.getPageTitle());
+        assertTrue(checkoutOverviewPage.isCheckoutOverviewPageDisplayed(),
+                "Checkout overview page should be displayed");
+        assertEquals("Checkout: Overview", checkoutOverviewPage.getPageTitle(),
+                "Page title should be 'Checkout: Overview'");
     }
 
     @When("I finish the order")
@@ -95,23 +95,23 @@ public class SauceDemoStepDefinitions {
 
     @Then("I should see the order confirmation")
     public void i_should_see_the_order_confirmation() {
-        assertTrue("Checkout complete page should be displayed",
-                checkoutCompletePage.isCheckoutCompletePageDisplayed());
-        assertEquals("Page title should be 'Checkout: Complete!'",
-                "Checkout: Complete!", checkoutCompletePage.getPageTitle());
+        assertTrue(checkoutCompletePage.isCheckoutCompletePageDisplayed(),
+                "Checkout complete page should be displayed");
+        assertEquals("Checkout: Complete!", checkoutCompletePage.getPageTitle(),
+                "Page title should be 'Checkout: Complete!'");
     }
 
     @Then("I should see {string} message")
     public void i_should_see_message(String expectedMessage) {
         String actualMessage = checkoutCompletePage.getConfirmationMessage();
-        assertEquals("Confirmation message should match expected message",
-                expectedMessage, actualMessage);
+        assertEquals(expectedMessage, actualMessage,
+                "Confirmation message should match expected message");
     }
 
     @Then("I should see an error message {string}")
     public void i_should_see_an_error_message(String expectedError) {
-        assertTrue("Error message should be displayed", loginPage.isErrorMessageDisplayed());
-        assertEquals("Error message should match expected text",
-                expectedError, loginPage.getErrorMessage());
+        assertTrue(loginPage.isErrorMessageDisplayed(), "Error message should be displayed");
+        assertEquals(expectedError, loginPage.getErrorMessage(),
+                "Error message should match expected text");
     }
 }

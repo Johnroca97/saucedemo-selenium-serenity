@@ -8,7 +8,15 @@ import org.junit.runner.RunWith;
 @CucumberOptions(
         features = "src/test/resources/features",
         glue = "com.saucedemo.stepdefinitions",
-        tags = "@SauceDemo"
+        tags = "@SauceDemo",
+        plugin = {
+                "pretty",                                    // Formato bonito en consola
+                "json:target/cucumber-reports/cucumber.json", // Para reportes de Serenity
+                "html:target/cucumber-html-report"           // Reporte HTML básico
+        },
+        snippets = CucumberOptions.SnippetType.CAMELCASE,   // Genera métodos en camelCase
+        dryRun = false,                                     // false = ejecuta los tests
+        monochrome = true                                   // Output más legible en consola
 )
 public class TestRunner {
 }
