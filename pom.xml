@@ -21,7 +21,7 @@
         <serenity.version>4.2.8</serenity.version>
         <selenium.version>4.25.0</selenium.version>
         <cucumber.version>7.18.1</cucumber.version>
-        <junit.version>4.13.2</junit.version>
+        <junit.version>5.10.3</junit.version>
         <junit.platform.version>1.10.3</junit.platform.version>
 
         <!-- Configuración de WebDriver -->
@@ -30,7 +30,7 @@
     </properties>
 
     <dependencies>
-        <!-- Serenity Core con JUnit 4 -->
+        <!-- Serenity Core -->
         <dependency>
             <groupId>net.serenity-bdd</groupId>
             <artifactId>serenity-core</artifactId>
@@ -38,10 +38,10 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- Serenity JUnit Runner para @RunWith -->
+        <!-- Serenity JUnit 5 Integration -->
         <dependency>
             <groupId>net.serenity-bdd</groupId>
-            <artifactId>serenity-junit</artifactId>
+            <artifactId>serenity-junit5</artifactId>
             <version>${serenity.version}</version>
             <scope>test</scope>
         </dependency>
@@ -54,11 +54,27 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- JUnit 4 para @RunWith -->
+        <!-- JUnit 5 -->
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
             <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- JUnit Platform Suite -->
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-suite</artifactId>
+            <version>${junit.platform.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Cucumber JUnit Platform Engine -->
+        <dependency>
+            <groupId>io.cucumber</groupId>
+            <artifactId>cucumber-junit-platform-engine</artifactId>
+            <version>${cucumber.version}</version>
             <scope>test</scope>
         </dependency>
 
@@ -88,13 +104,6 @@
         <dependency>
             <groupId>io.cucumber</groupId>
             <artifactId>cucumber-java</artifactId>
-            <version>${cucumber.version}</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>io.cucumber</groupId>
-            <artifactId>cucumber-junit</artifactId>
             <version>${cucumber.version}</version>
             <scope>test</scope>
         </dependency>
@@ -135,13 +144,13 @@
                 </configuration>
             </plugin>
 
-            <!-- Maven Surefire Plugin - Deshabilitado para usar Failsafe -->
+            <!-- Maven Surefire Plugin para unit tests -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.5.1</version>
                 <configuration>
-                    <skip>true</skip>
+                    <skip>true</skip> <!-- Skip unit tests, usamos failsafe para integration tests -->
                 </configuration>
             </plugin>
 
@@ -162,6 +171,8 @@
                         <webdriver.driver>${webdriver.driver}</webdriver.driver>
                         <webdriver.autodownload>${webdriver.autodownload}</webdriver.autodownload>
                         <webdriver.gecko.driver.version>0.35.0</webdriver.gecko.driver.version>
+                        <junit.platform.output.capture.stdout>true</junit.platform.output.capture.stdout>
+                        <junit.platform.output.capture.stderr>true</junit.platform.output.capture.stderr>
                     </systemPropertyVariables>
                     <parallel>classes</parallel>
                     <threadCount>1</threadCount>
@@ -204,4 +215,24 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <!-- Perfil para ejecución local -->
+        <profile>
+            <id>local</id>
+            <properties>
+                <webdriver.driver>firefox</webdriver.driver>
+                <webdriver.headless>false</webdriver.headless>
+            </properties>
+        </profile>
+
+        <!-- Perfil para CI/CD -->
+        <profile>
+            <id>ci</id>
+            <properties>
+                <webdriver.driver>firefox</webdriver.driver>
+                <webdriver.headless>true</webdriver.headless>
+            </properties>
+        </profile>
+    </profiles>
 </project>

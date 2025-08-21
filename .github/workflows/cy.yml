@@ -39,10 +39,10 @@ jobs:
         with:
           java-version: ${{ matrix.java }}
           distribution: 'temurin'
-          cache: 'maven'  # MEJORA: Cache integrado de Java action
+          cache: 'maven'
 
       - name: Cache Maven dependencies
-        uses: actions/cache@v4  # ACTUALIZADO: v3 → v4
+        uses: actions/cache@v4
         with:
           path: ~/.m2
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
@@ -51,14 +51,13 @@ jobs:
       - name: Setup Firefox
         uses: browser-actions/setup-firefox@latest
         with:
-          firefox-version: 'latest-esr'  # MEJORA: ESR más estable que latest
+          firefox-version: 'latest-esr'
 
       - name: Install Xvfb (Virtual Display)
         run: |
           sudo apt-get update
           sudo apt-get install -y xvfb
 
-      # NUEVO: Verificar versiones instaladas (útil para debugging)
       - name: Verificar versiones
         run: |
           echo "Java version:"
@@ -68,7 +67,7 @@ jobs:
           echo "Firefox version:"
           firefox --version
 
-      - name: Ejecutar pruebas
+      - name: Ejecutar pruebas con JUnit Platform
         run: |
           export DISPLAY=:99
           Xvfb :99 -screen 0 1920x1080x24 > /dev/null 2>&1 &
@@ -76,15 +75,18 @@ jobs:
           mvn clean verify \
             -Dcucumber.filter.tags="${{ github.event.inputs.test_tags || '@SauceDemo' }}" \
             -Dwebdriver.driver=firefox \
-            -Dwebdriver.headless=true
+            -Dwebdriver.headless=true \
+            -Dserenity.browser.maximized=true \
+            -Dserenity.take.screenshots=FOR_FAILURES \
+            -Djunit.platform.output.capture.stdout=true \
+            -Djunit.platform.output.capture.stderr=true
         env:
-          MAVEN_OPTS: -Xmx1024m -Dfile.encoding=UTF-8  # MEJORA: Añadido encoding
+          MAVEN_OPTS: -Xmx1024m -Dfile.encoding=UTF-8
 
       - name: Generar reportes Serenity
         if: always()
         run: mvn serenity:aggregate
 
-      # NUEVO: Publicar resumen de resultados en el job summary
       - name: Publicar resumen de pruebas
         if: always()
         run: |
@@ -93,6 +95,9 @@ jobs:
             echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
             cat target/site/serenity/summary.txt >> $GITHUB_STEP_SUMMARY
             echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "## ⚠️ No se encontraron reportes de pruebas" >> $GITHUB_STEP_SUMMARY
+            echo "Los tests no se ejecutaron o hubo un error en la configuración." >> $GITHUB_STEP_SUMMARY
           fi
 
       - name: Upload reportes de Serenity
@@ -111,7 +116,6 @@ jobs:
           path: target/site/serenity/screenshots/
           retention-days: 7
 
-      # MEJORA: Logs de Maven en caso de falla
       - name: Upload Maven logs en fallos
         if: failure()
         uses: actions/upload-artifact@v4
@@ -120,15 +124,16 @@ jobs:
           path: |
             target/surefire-reports/
             target/failsafe-reports/
+            target/cucumber-reports/
           retention-days: 7
 
       - name: Comentar resultados en PR
         if: github.event_name == 'pull_request' && always()
-        uses: actions/github-script@v7  # ACTUALIZADO: v6 → v7
+        uses: actions/github-script@v7
         with:
           script: |
             const fs = require('fs');
-            const path = 'target/site/serenity/index.html';
+            const path = require('path');
             
             let status = '✅';
             let statusText = 'exitosas';
@@ -137,24 +142,32 @@ jobs:
               statusText = 'con fallos';
             }
             
-            if (fs.existsSync(path)) {
-              await github.rest.issues.createComment({
-                issue_number: context.issue.number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                body: `## ${status} Resultados de Pruebas Automatizadas
+            // Verificar si hay reportes generados
+            const reportPath = path.join(process.env.GITHUB_WORKSPACE, 'target/site/serenity');
+            let hasReports = false;
+            try {
+              hasReports = fs.existsSync(reportPath) && fs.readdirSync(reportPath).length > 0;
+            } catch (e) {
+              console.log('Error checking reports:', e.message);
+            }
+            
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## ${status} Resultados de Pruebas Automatizadas
             
                 Las pruebas de Serenity BDD han completado ${statusText}.
             
-                📊 **Reportes disponibles en los Artifacts del workflow**
+                ${hasReports ? '📊 **Reportes disponibles en los Artifacts del workflow**' : '⚠️ **No se generaron reportes - Ver logs para detalles**'}
                 🔗 **[Ver detalles del workflow](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})**
             
                 **Configuración:**
                 - 🌐 Browser: Firefox
                 - ☕ Java: 21
-                - 🏷️ Tags: ${{ github.event.inputs.test_tags || '@SauceDemo' }}`
-              });
-            }
+                - 🏷️ Tags: ${{ github.event.inputs.test_tags || '@SauceDemo' }}
+                - 🧪 Framework: JUnit Platform + Cucumber`
+            });
 
   notification:
     needs: test
