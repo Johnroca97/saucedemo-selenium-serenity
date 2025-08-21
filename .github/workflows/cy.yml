@@ -62,7 +62,7 @@ jobs:
           export DISPLAY=:99
           Xvfb :99 -screen 0 1920x1080x24 > /dev/null 2>&1 &
           sleep 3
-          mvn clean verify -Dtags="${{ github.event.inputs.test_tags || '@SauceDemo' }}"
+          mvn clean test -Dtags="${{ github.event.inputs.test_tags || '@SauceDemo' }}"
         env:
           MAVEN_OPTS: -Xmx1024m
 

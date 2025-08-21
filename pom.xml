@@ -18,6 +18,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <serenity.version>4.0.1</serenity.version>
         <cucumber.version>7.15.0</cucumber.version>
+        <webdriver.driver>firefox</webdriver.driver>
+        <webdriver.autodownload>true</webdriver.autodownload>
     </properties>
 
     <dependencies>
@@ -45,12 +47,11 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- JUnit Jupiter Engine -->
+        <!-- Firefox WebDriver -->
         <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-engine</artifactId>
-            <version>5.10.0</version>
-            <scope>test</scope>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-firefox-driver</artifactId>
+            <version>4.15.0</version>
         </dependency>
 
         <!-- Logback for logging -->
@@ -68,7 +69,13 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.2.2</version>
                 <configuration>
-                    <skip>true</skip>
+                    <includes>
+                        <include>**/*Runner.java</include>
+                    </includes>
+                    <systemPropertyVariables>
+                        <webdriver.driver>${webdriver.driver}</webdriver.driver>
+                        <webdriver.autodownload>${webdriver.autodownload}</webdriver.autodownload>
+                    </systemPropertyVariables>
                 </configuration>
             </plugin>
 
@@ -77,25 +84,8 @@
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <version>3.2.2</version>
                 <configuration>
-                    <includes>
-                        <include>**/*Test.java</include>
-                        <include>**/*TestSuite.java</include>
-                        <include>**/Test*.java</include>
-                        <include>**/When*.java</include>
-                        <include>**/*Runner.java</include>
-                    </includes>
-                    <parallel>methods</parallel>
-                    <threadCount>4</threadCount>
-                    <forkCount>4</forkCount>
+                    <skip>true</skip>
                 </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>integration-test</goal>
-                            <goal>verify</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
 
             <plugin>
@@ -108,7 +98,7 @@
                 <executions>
                     <execution>
                         <id>serenity-reports</id>
-                        <phase>post-integration-test</phase>
+                        <phase>test</phase>
                         <goals>
                             <goal>aggregate</goal>
                         </goals>
