@@ -1,14 +1,12 @@
 package com.saucedemo.runners;
 
-import io.cucumber.junit.CucumberOptions;
-import net.serenitybdd.cucumber.CucumberWithSerenity;
-import org.junit.runner.RunWith;
+import io.cucumber.junit.platform.engine.Cucumber;
+import org.junit.platform.suite.api.*;
 
-@RunWith(CucumberWithSerenity.class)
-@CucumberOptions(
-        features = "src/test/resources/features",
-        glue = "com.saucedemo.stepdefinitions",
-        tags = "@smoke"
-)
+@Suite
+@IncludeEngines("cucumber")
+@SelectClasspathResource("features")
+@ConfigurationParameter(key = "cucumber.glue", value = "com.saucedemo.stepdefinitions")
+@ConfigurationParameter(key = "cucumber.filter.tags", value = "@smoke")
 public class SmokeTestRunner {
 }

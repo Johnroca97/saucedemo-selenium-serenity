@@ -8,6 +8,5 @@ import org.junit.platform.suite.api.*;
 @SelectClasspathResource("features")
 @ConfigurationParameter(key = "cucumber.glue", value = "com.saucedemo.stepdefinitions")
 @ConfigurationParameter(key = "cucumber.filter.tags", value = "@SauceDemo")
-@ConfigurationParameter(key = "cucumber.plugin", value = "pretty,html:target/cucumber-reports,json:target/cucumber-reports/cucumber.json")
 public class TestRunner {
 }
